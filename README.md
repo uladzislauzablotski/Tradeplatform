@@ -1,2 +1,1 @@
 # tradeplatform
-#simple trade platform

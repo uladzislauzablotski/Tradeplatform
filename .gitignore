@@ -1,3 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
 /.idea
 /.mypy_cache
+/core/accounts/migrations/

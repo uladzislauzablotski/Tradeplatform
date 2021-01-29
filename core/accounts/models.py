@@ -19,7 +19,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
     def __str__(self):
-        pass
+        return self.username
+
 
     is_staff = models.BooleanField(default=False)
 

@@ -25,6 +25,3 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
 COPY ./core .
-
-RUN chmod +x /usr/src/app/entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

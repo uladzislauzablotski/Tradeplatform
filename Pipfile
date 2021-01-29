@@ -7,6 +7,9 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 psycopg2-binary = "*"
+pyjwt = "*"
+celery = "*"
+redis = "*"
 
 [dev-packages]
 

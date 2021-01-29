@@ -25,3 +25,26 @@ services:
       - POSTGRES_DB=postgres
     env_file:
       - ./.env.dev
+
+  redis:
+    image: redis:6-alpine
+    ports:
+    - "6000:6000"
+    volumes:
+    - .:/usr/src/volumes/redis
+
+  celery:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    command: celery -A tradeplatform worker -l info
+    volumes:
+      - .:/usr/src/volumes/celery
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+      - redis
+      - web_app
+

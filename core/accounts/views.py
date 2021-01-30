@@ -1,7 +1,9 @@
-from rest_framework import mixins, viewsets
-from accounts.serializers import RegistrationSerializer
+from rest_framework import mixins, viewsets, status
+from accounts.serializers import RegistrationSerializer, ActivationSerializer
+from accounts.scripts import decode_token
+from accounts.models import User
 from rest_framework.response import Response
-from django.contrib.auth.models import User
+
 
 
 class RegistrationView(
@@ -14,9 +16,7 @@ class RegistrationView(
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid()
-
-        if not serializer.save():
-            data = serializer.errors
+        serializer.save()
 
         data = {
             "message": "We've send confirmation link on your email."
@@ -34,6 +34,25 @@ class ActivationView(
     lookup_field = 'token'
     lookup_value_regex = '[\w\.-]+'
 
+    serializer_class = ActivationSerializer
+
     def retrieve(self, request, token):
-        print(token)
-        return Response(request.data)
+
+        try:
+            data = decode_token(token)
+        except:
+            return Response({
+                "token": "Invalid token",
+                "description" : "Just ensure link is correct or not expired."
+          }, status=status.HTTP_400_BAD_REQUEST)
+
+        pk = data.get('pk')
+        user = User.objects.get(pk=pk)
+
+        serializer = ActivationSerializer(user, data={'is_active': True}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            'detail': "Your account was successfully activated!"
+        })

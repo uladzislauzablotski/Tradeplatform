@@ -12,3 +12,16 @@ class RegistrationSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class ActivationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('is_active',)
+
+    def update(self, instance, validated_data):
+        instance.is_active = validated_data.get('is_active')
+        instance.save()
+
+        return instance

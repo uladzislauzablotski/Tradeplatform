@@ -1,5 +1,6 @@
 import jwt
 from django.conf import settings
+from rest_framework.response import Response
 
 
 def get_domain():
@@ -22,7 +23,7 @@ def decode_token(token):
     data = jwt.decode(
         token,
         settings.SECRET_KEY,
-        algorithm="HS256"
+        algorithms=["HS256"]
     )
-    return data
 
+    return data

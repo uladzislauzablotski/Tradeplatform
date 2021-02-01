@@ -10,12 +10,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     Custom User model.
     """
 
-    username = models.CharField(db_index=True, max_length=255, unique=True)
+    username = models.CharField(
+        db_index=True,
+        max_length=255,
+        unique=True,
+        blank=False
+    )
 
     email = models.EmailField(
         validators=[validators.validate_email],
         unique=True,
-        blank=False
+        blank=False,
         )
 
     def __str__(self):

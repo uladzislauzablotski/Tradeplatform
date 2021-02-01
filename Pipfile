@@ -10,6 +10,8 @@ psycopg2-binary = "*"
 pyjwt = "*"
 celery = "*"
 redis = "*"
+pytest = "*"
+pytest-django = "*"
 
 [dev-packages]
 

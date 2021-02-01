@@ -15,15 +15,17 @@ class RegistrationView(
     def create(self, request):
 
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid()
-        serializer.save()
 
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
         data = {
             "message": "We've send confirmation link on your email."
                        " In oder to activate account click the link in the message."
         }
 
-        return Response(data)
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 
@@ -50,7 +52,10 @@ class ActivationView(
         user = User.objects.get(pk=pk)
 
         serializer = ActivationSerializer(user, data={'is_active': True}, partial=True)
-        serializer.is_valid(raise_exception=True)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         serializer.save()
 
         return Response({

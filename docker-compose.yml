@@ -4,8 +4,9 @@ services:
 
   web_app:
     build: .
+    container_name: web_app
     volumes:
-      - .:/usr/src/app/volumes/web/
+      - .:/usr/src/volumes/web/
     ports:
       - "8081:8081"
     env_file:
@@ -16,7 +17,7 @@ services:
   db:
     image: postgres
     volumes:
-      - .:/usr/src/app/volumes/postgresql/
+      - .:/usr/src/volumes/postgresql/
     ports:
     - "5432:5432"
     environment:

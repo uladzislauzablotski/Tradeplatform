@@ -1,6 +1,6 @@
 from rest_framework import mixins, viewsets, status
-from accounts.serializers import RegistrationSerializer, ActivationSerializer
-from accounts.scripts import decode_token
+from .serializers import RegistrationSerializer, ActivationSerializer
+from .scripts import decode_token
 from accounts.models import User
 from rest_framework.response import Response
 
@@ -42,14 +42,13 @@ class ActivationView(
 
         try:
             data = decode_token(token)
+            pk = data.get('pk')
+            user = User.objects.get(pk=pk)
         except:
             return Response({
                 "token": "Invalid token",
                 "description" : "Just ensure link is correct or not expired."
           }, status=status.HTTP_400_BAD_REQUEST)
-
-        pk = data.get('pk')
-        user = User.objects.get(pk=pk)
 
         serializer = ActivationSerializer(user, data={'is_active': True}, partial=True)
 

@@ -1,6 +1,7 @@
-from rest_framework import mixins, viewsets, status
-from .serializers import RegistrationSerializer, ActivationSerializer
-from .scripts import decode_token
+from rest_framework import mixins, viewsets, status, authentication
+from rest_framework.permissions import AllowAny
+from .serializers import (RegistrationSerializer, ActivationSerializer, LogInSerializer, AccessTokenSerializer)
+from accounts.scripts import decode_token
 from accounts.models import User
 from rest_framework.response import Response
 
@@ -10,6 +11,7 @@ class RegistrationView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
+    permission_classes = [AllowAny]
     serializer_class = RegistrationSerializer
 
     def create(self, request):
@@ -28,7 +30,7 @@ class RegistrationView(
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-
+#Not Ok
 class ActivationView(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
@@ -36,6 +38,7 @@ class ActivationView(
     lookup_field = 'token'
     lookup_value_regex = '[\w\.-]+'
 
+    permission_classes = [AllowAny]
     serializer_class = ActivationSerializer
 
     def retrieve(self, request, token):
@@ -60,3 +63,40 @@ class ActivationView(
         return Response({
             'detail': "Your account was successfully activated!"
         })
+
+#OK
+class LogInView(
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
+    permission_classes = [AllowAny]
+    serializer_class = LogInSerializer
+
+    def create(self, request):
+
+        serializer = LogInSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors)
+
+        return Response(
+            serializer.validated_data
+        )
+
+#
+class AccessTokenView(
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
+    permission_classes = [AllowAny]
+    serializer_class = AccessTokenSerializer
+
+    def create(self, request):
+        serializer = AccessTokenSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors)
+
+        return Response(
+            serializer.validated_data
+        )

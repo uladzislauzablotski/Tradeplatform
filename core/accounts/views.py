@@ -11,7 +11,7 @@ class RegistrationView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
     def create(self, request):
@@ -37,7 +37,7 @@ class ActivationView(
     lookup_field = 'token'
     lookup_value_regex = '[\w\.-]+'
 
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny,)
     serializer_class = ActivationSerializer
 
     def retrieve(self, request, token):
@@ -67,7 +67,7 @@ class LogInView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny,)
     serializer_class = LogInSerializer
 
     def create(self, request):
@@ -85,7 +85,7 @@ class AccessTokenView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny,)
     serializer_class = AccessTokenSerializer
 
     def create(self, request):

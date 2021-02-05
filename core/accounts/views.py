@@ -11,15 +11,14 @@ class RegistrationView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny)
     serializer_class = RegistrationSerializer
 
     def create(self, request):
 
         serializer = self.serializer_class(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         serializer.save()
         data = {
@@ -38,7 +37,7 @@ class ActivationView(
     lookup_field = 'token'
     lookup_value_regex = '[\w\.-]+'
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny)
     serializer_class = ActivationSerializer
 
     def retrieve(self, request, token):
@@ -55,8 +54,7 @@ class ActivationView(
 
         serializer = ActivationSerializer(user, data={'is_active': True}, partial=True)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         serializer.save()
 
@@ -69,15 +67,14 @@ class LogInView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny)
     serializer_class = LogInSerializer
 
     def create(self, request):
 
         serializer = LogInSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors)
+        serializer.is_valid(raise_exception=True)
 
         return Response(
             serializer.validated_data
@@ -88,14 +85,13 @@ class AccessTokenView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny)
     serializer_class = AccessTokenSerializer
 
     def create(self, request):
         serializer = AccessTokenSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors)
+        serializer.is_valid(raise_exception=True)
 
         return Response(
             serializer.validated_data

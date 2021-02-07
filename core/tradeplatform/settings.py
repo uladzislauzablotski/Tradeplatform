@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     #local apps
     'accounts.apps.AccountsConfig',
+    'trade_app.apps.TradeAppConfig',
 
     #third-party packages
     'rest_framework',

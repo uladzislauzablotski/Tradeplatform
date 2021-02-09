@@ -3,79 +3,95 @@ from django.db import models
 from trade_app.validators import validate_price
 
 
-class Currency(models.Model):
-    code = models.CharField(max_length=10)
-    name = models.CharField(max_length=20)
+class StockBase(models.Model):
+    code = models.CharField(max_length=10,
+                            unique=True,
+                            blank=False,)
 
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        abstract = True
+
+
+class Currency(StockBase):
     class Meta:
         verbose_name = 'Currency'
         verbose_name_plural = 'Currencies'
 
-    def __str__(self):
-        return self.code
 
-
-class Item(models.Model):
-    code = models.CharField(max_length=10)
-    name = models.CharField(max_length=20)
-
+class Item(StockBase):
     currency = models.ForeignKey(
         Currency,
         related_name='+',
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        blank=False
     )
-
-    def __str__(self):
-        return self.code
 
 
 class Price(models.Model):
     value = models.FloatField(
         max_length=15,
+        default=0
 
     )
 
     item = models.OneToOneField(
         Item,
         related_name='price',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=False
     )
 
 
 class WatchList(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-
-    items = models.ManyToManyField(
-        Item,
-    )
-
-
-class Offer(models.Model):
-
-    amount = models.PositiveIntegerField(
+        on_delete=models.CASCADE,
+        related_name='watchlist',
         blank=False
     )
 
+    items = models.ManyToManyField(
+        Item
+    )
+
+
+class TradeBase(models.Model):
     price = models.FloatField(
         blank=False,
         validators=[validate_price]
     )
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        blank=False,
-        on_delete=models.CASCADE
+    amount = models.PositiveIntegerField(
+        blank=False
     )
 
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Offer(models.Model):
     item = models.ForeignKey(
         Item,
+        related_name='+',
         blank=False,
         on_delete=models.CASCADE
     )
 
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='offers',
+        blank=False,
+        on_delete=models.CASCADE
+    )
     '''
     There are only to actions :
     Buy or Sell
@@ -84,12 +100,16 @@ class Offer(models.Model):
         blank=False
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
 
 class Trade(models.Model):
+    item = models.ForeignKey(
+        Item,
+        related_name='+',
+        blank=False,
+        on_delete=models.SET_NULL(),
+        null=True,
+    )
+
     buyer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -102,24 +122,6 @@ class Trade(models.Model):
         blank=False,
         related_name='sell',
         on_delete=models.CASCADE
-    )
-
-    item = models.ForeignKey(
-        Item,
-        blank=False,
-        on_delete=models.CASCADE
-    )
-
-    amount = models.PositiveIntegerField(
-        blank=False
-    )
-
-    price = models.FloatField(
-        blank=False,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
     )
 
 

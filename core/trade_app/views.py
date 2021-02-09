@@ -30,7 +30,7 @@ class WatchListViewSet(
 
     def create(self, request):
         user = self.request.user
-        watchlist = WatchList.objects.get(user=user)
+        watchlist = user.watchlist
 
         items = WatchListCreateItemSerializer(watchlist, data=request.data)
         items.is_valid(raise_exception=True)
@@ -41,7 +41,7 @@ class WatchListViewSet(
 
     def destroy(self, request, pk):
         user = self.request.user
-        watchlist = WatchList.objects.get(user=user)
+        watchlist = user.watchlist
 
         watchlist.items.remove(pk)
 
@@ -51,7 +51,7 @@ class WatchListViewSet(
 
         user = self.request.user
 
-        watchlist = WatchList.objects.get(user=user)
+        watchlist = user.watchlist
 
         """get items from user's watchlist"""
         return watchlist.items.all()
@@ -66,7 +66,7 @@ class OfferView(
     serializer_class = OfferSerializer
 
     def get_queryset(self):
-        return Offer.objects.filter(user=self.request.user).order_by('created_at')
+        return self.request.user.offers.all().order_by('created_at')
 
     def create(self, request):
         user = self.request.user

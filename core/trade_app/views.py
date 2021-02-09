@@ -1,6 +1,6 @@
 from rest_framework import mixins, viewsets
-from trade_app.serializers import (ItemSerializer, WatchListSerializer, WatchListCreateItemSerializer)
-from trade_app.models import (Item, WatchList)
+from trade_app.serializers import (ItemSerializer, WatchListSerializer, WatchListCreateItemSerializer, OfferSerializer)
+from trade_app.models import (Item, WatchList, Offer)
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
@@ -8,7 +8,6 @@ from rest_framework.permissions import AllowAny
 class ItemViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    mixins.CreateModelMixin,
     viewsets.GenericViewSet
 ):
     serializer_class = ItemSerializer
@@ -54,6 +53,22 @@ class WatchListViewSet(
 
         """get items from user's watchlist"""
         return watchlist.items.all()
+
+
+class OfferView(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = OfferSerializer
+
+    def get_queryset(self):
+        return Offer.objects.filter(user=self.request.user).order_by('created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 
 

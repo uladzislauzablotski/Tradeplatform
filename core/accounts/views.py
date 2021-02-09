@@ -96,3 +96,4 @@ class AccessTokenView(
         return Response(
             serializer.validated_data
         )
+

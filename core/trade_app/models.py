@@ -55,7 +55,7 @@ class WatchList(models.Model):
 
 class Offer(models.Model):
 
-    amount = models.PositiveSmallIntegerField(
+    amount = models.PositiveIntegerField(
         blank=False
     )
 
@@ -66,10 +66,58 @@ class Offer(models.Model):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        blank=False,
         on_delete=models.CASCADE
     )
 
     item = models.ForeignKey(
         Item,
+        blank=False,
         on_delete=models.CASCADE
+    )
+
+    '''
+    There are only to actions :
+    Buy or Sell
+    '''
+    action = models.BooleanField(
+        blank=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+
+class Trade(models.Model):
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='buy',
+        blank=False,
+    )
+
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False,
+        related_name='sell',
+        on_delete=models.CASCADE
+    )
+
+    item = models.ForeignKey(
+        Item,
+        blank=False,
+        on_delete=models.CASCADE
+    )
+
+    amount = models.PositiveIntegerField(
+        blank=False
+    )
+
+    price = models.FloatField(
+        blank=False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
     )

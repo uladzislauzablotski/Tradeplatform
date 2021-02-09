@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from trade_app.models import Item, WatchList
+from trade_app.models import Item, WatchList, Offer
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -39,3 +39,12 @@ class WatchListCreateItemSerializer(serializers.ModelSerializer):
             watchlist.items.add(item)
 
         return watchlist
+
+
+class OfferSerializer(serializers.ModelSerializer):
+
+    item = ItemSerializer
+
+    class Meta:
+        model = Offer
+        fields = ('amount', 'price', 'item', 'action', 'created_at')

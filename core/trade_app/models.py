@@ -121,3 +121,25 @@ class Trade(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
+
+
+class Inventory(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False,
+        related_name='inventory',
+        on_delete=models.CASCADE
+    )
+
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name='+',
+        blank=False
+    )
+
+    amount = models.PositiveIntegerField(
+        blank=False,
+        default=0
+    )

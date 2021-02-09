@@ -7,6 +7,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'make_trades': {
         'task': 'trade_app.tasks.make_trades',
-        'schedule': 10.0,
+        'schedule': 60.0,
     },
 }

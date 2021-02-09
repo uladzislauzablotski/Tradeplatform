@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from trade_app.models import Item, WatchList, Offer
+from trade_app.models import Item, WatchList, Offer, Inventory
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -43,8 +43,39 @@ class WatchListCreateItemSerializer(serializers.ModelSerializer):
 
 class OfferSerializer(serializers.ModelSerializer):
 
-    item = ItemSerializer
-
     class Meta:
         model = Offer
         fields = ('amount', 'price', 'item', 'action', 'created_at')
+
+    def create(self, validated_data):
+        data = dict(**validated_data)
+
+        action = data.get('action')
+        user = data.get('user')
+        item = data.get('item')
+        amount = data.get('amount')
+
+        if not action:
+            try:
+                user_has = user.inventory.get(item=item).amount
+
+                if not user_has >= amount:
+                    raise Exception
+            except:
+
+                raise serializers.ValidationError({
+                    'amount': 'You have no {amount} stocks of {name_of_stock}'.format(
+                        amount=amount, name_of_stock=item.name
+                    )
+                })
+
+        return Offer.objects.create(**validated_data)
+
+
+class InventorySerializer(serializers.ModelSerializer):
+
+    item = ItemSerializer()
+
+    class Meta:
+        model = Inventory
+        fields = ('item', 'amount',)

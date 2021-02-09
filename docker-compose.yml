@@ -14,6 +14,8 @@ services:
     depends_on:
       - db
       - redis
+      - celery
+      - celery-beat
 
   db:
     image: postgres

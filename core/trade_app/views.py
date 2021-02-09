@@ -1,5 +1,6 @@
 from rest_framework import mixins, viewsets
-from trade_app.serializers import (ItemSerializer, WatchListSerializer, WatchListCreateItemSerializer, OfferSerializer)
+from trade_app.serializers import (ItemSerializer, WatchListSerializer, WatchListCreateItemSerializer, OfferSerializer,
+                                   InventorySerializer)
 from trade_app.models import (Item, WatchList, Offer)
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -12,6 +13,7 @@ class ItemViewSet(
 ):
     serializer_class = ItemSerializer
     queryset = Item.objects.all()
+
 
 class WatchListViewSet(
     mixins.ListModelMixin,
@@ -66,8 +68,27 @@ class OfferView(
     def get_queryset(self):
         return Offer.objects.filter(user=self.request.user).order_by('created_at')
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def create(self, request):
+        user = self.request.user
+
+        offer = self.serializer_class(data=request.data)
+        offer.is_valid(raise_exception=True)
+
+        offer.save(user=user)
+
+        return Response(offer.data)
+
+
+class InventoryView(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+
+    serializer_class = InventorySerializer
+
+    def get_queryset(self):
+        return self.request.user.inventory.all()
 
 
 

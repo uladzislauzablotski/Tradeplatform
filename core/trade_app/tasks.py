@@ -1,17 +1,20 @@
 from tradeplatform.celery import app
 from django.shortcuts import get_object_or_404
 from .models import Offer, Trade, Inventory
+from trade_app.scripts import get_account
 
 
 @app.task
 def make_trades(*args, **kwargs):
     buy_offers = Offer.objects.filter(action=True).order_by('created_at')
+    print(buy_offers)
 
     for buy_offer in buy_offers:
 
         while True:
 
             next = find_suitable_sell_offer_and_make_trade(buy_offer)
+            print(next)
 
             if not next:
                 "There is no suitable offer" \
@@ -34,21 +37,28 @@ def make_trade(buy_offer, sell_offer):
     amount_to_sell = sell_offer.amount
 
     if amount_to_buy > amount_to_sell:
+        print('1')
         return trade_amount_to_buy_more(buy_offer, sell_offer, amount_to_sell)
 
     elif amount_to_buy < amount_to_sell:
+        print('2')
         return trade_amount_to_buy_less(buy_offer, sell_offer, amount_to_buy)
 
     elif amount_to_buy == amount_to_sell:
+        print('3')
         return trade_amount_to_buy_equal(buy_offer, sell_offer, amount_to_buy)
 
 
 def trade_amount_to_buy_more(buy_offer, sell_offer, amount):
-    buy_offer.amount = buy_offer.amount + amount
+    buy_offer.amount += amount
     buy_offer.save()
 
-    change_buyer_inventory(buy_offer)
+    price = sell_offer.price
+
+    change_buyer_inventory(buy_offer, amount)
     change_seller_inventory(sell_offer, amount)
+    change_buyer_balance(buy_offer, price, amount)
+    change_seller_balance(sell_offer, price, amount)
 
     create_trade(buy_offer, sell_offer, amount)
 
@@ -58,11 +68,15 @@ def trade_amount_to_buy_more(buy_offer, sell_offer, amount):
 
 
 def trade_amount_to_buy_less(buy_offer, sell_offer, amount):
-    sell_offer.amount = sell_offer.amount - amount
+    sell_offer.amount -= amount
     sell_offer.save()
 
-    change_buyer_inventory(buy_offer)
+    price = sell_offer.price
+
+    change_buyer_inventory(buy_offer, amount)
     change_seller_inventory(sell_offer, amount)
+    change_buyer_balance(buy_offer, price, amount)
+    change_seller_balance(sell_offer, price, amount)
 
     create_trade(buy_offer, sell_offer, amount)
 
@@ -73,8 +87,12 @@ def trade_amount_to_buy_less(buy_offer, sell_offer, amount):
 
 
 def trade_amount_to_buy_equal(buy_offer, sell_offer, amount):
-    change_buyer_inventory(buy_offer)
-    change_seller_inventory(sell_offer)
+    price = sell_offer.price
+
+    change_buyer_inventory(buy_offer, amount)
+    change_seller_inventory(sell_offer, amount)
+    change_buyer_balance(buy_offer, price, amount)
+    change_seller_balance(sell_offer, price, amount)
 
     create_trade(buy_offer, sell_offer, amount)
 
@@ -85,10 +103,10 @@ def trade_amount_to_buy_equal(buy_offer, sell_offer, amount):
     return False
 
 
-def change_buyer_inventory(buy_offer):
+def change_buyer_inventory(buy_offer, amount):
+    print('4')
     user = buy_offer.user
     item = buy_offer.item
-    amount = buy_offer.amount
 
     inventory, created = Inventory.objects.filter(item=item).get_or_create(
         user=user,
@@ -97,22 +115,47 @@ def change_buyer_inventory(buy_offer):
         }
     )
 
-    inventory_amount = inventory.amount
-    inventory.amount = inventory_amount + amount
+    inventory.amount += amount
 
     inventory.save()
 
 
 def change_seller_inventory(sell_offer, amount):
+    print('5')
     user = sell_offer.user
     item = sell_offer.item
 
     inventory = get_object_or_404(Inventory.objects.filter(item=item), user=user)
 
-    inventory_amount = inventory.amount
-    inventory.amount = inventory_amount - amount
+    inventory.reserved_amount -= amount
 
     inventory.save()
+
+
+def change_buyer_balance(buy_offer, price, amount):
+    user = buy_offer.user
+
+    account = get_account(user)
+
+    agreed_price = buy_offer.price    # user agreed for this price
+    actual_price = price  # this is price of seller, which can be less than agreed price
+
+    '''Buyer saved money because of delta of agreed price and actual price'''
+    saved = (agreed_price - actual_price) * amount
+
+    account.balance += saved
+    account.reserved_balance -= amount*agreed_price
+
+    account.save()
+
+
+def change_seller_balance(sell_offer, price, amount):
+    user = sell_offer.user
+
+    account = get_account(user)
+    account.balance += (amount*price)
+
+    account.save()
 
 
 def find_sell_offer_suitable_for_buy_price(price):

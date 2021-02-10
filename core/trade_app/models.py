@@ -78,7 +78,7 @@ class TradeBase(models.Model):
         abstract = True
 
 
-class Offer(models.Model):
+class Offer(TradeBase):
     item = models.ForeignKey(
         Item,
         related_name='+',
@@ -101,12 +101,12 @@ class Offer(models.Model):
     )
 
 
-class Trade(models.Model):
+class Trade(TradeBase):
     item = models.ForeignKey(
         Item,
         related_name='+',
         blank=False,
-        on_delete=models.SET_NULL(),
+        on_delete=models.SET_NULL,
         null=True,
     )
 
@@ -144,4 +144,37 @@ class Inventory(models.Model):
     amount = models.PositiveIntegerField(
         blank=False,
         default=0
+    )
+
+    '''It means these items wait for trade'''
+    reserved_amount = models.PositiveIntegerField(
+        blank=False,
+        default=0
+    )
+
+
+class Account(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False,
+        related_name='accounts',
+        on_delete=models.CASCADE
+    )
+
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        related_name='+'
+    )
+
+    balance = models.FloatField(
+        default=0,
+        validators=[validate_price]
+    )
+
+    '''It means this money wait for trade'''
+    reserved_balance = models.FloatField(
+        default=0,
+        validators=[validate_price]
     )

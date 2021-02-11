@@ -46,7 +46,7 @@ def make_trade(buy_offer, sell_offer):
 
 def trade_amount_to_buy_more(buy_offer, sell_offer, amount):
     buy_offer.amount += amount
-    buy_offer.save()
+    buy_offer.save(update_fields=['amount'])
 
     price = sell_offer.price
 
@@ -64,7 +64,7 @@ def trade_amount_to_buy_more(buy_offer, sell_offer, amount):
 
 def trade_amount_to_buy_less(buy_offer, sell_offer, amount):
     sell_offer.amount -= amount
-    sell_offer.save()
+    sell_offer.save(update_fields=['amount'])
 
     price = sell_offer.price
 
@@ -111,7 +111,7 @@ def change_buyer_inventory(buy_offer, amount):
 
     inventory.amount += amount
 
-    inventory.save()
+    inventory.save(update_fields=['amount'])
 
 
 def change_seller_inventory(sell_offer, amount):
@@ -122,7 +122,7 @@ def change_seller_inventory(sell_offer, amount):
 
     inventory.reserved_amount -= amount
 
-    inventory.save()
+    inventory.save(update_fields=['reserved_amount'])
 
 
 def change_buyer_balance(buy_offer, price, amount):
@@ -139,7 +139,7 @@ def change_buyer_balance(buy_offer, price, amount):
     account.balance += saved
     account.reserved_balance -= amount*agreed_price
 
-    account.save()
+    account.save(update_fields=['balance', 'reserved_balance'])
 
 
 def change_seller_balance(sell_offer, price, amount):
@@ -148,7 +148,7 @@ def change_seller_balance(sell_offer, price, amount):
     account = get_account(user)
     account.balance += (amount*price)
 
-    account.save()
+    account.save(update_fields=['balance'])
 
 
 def find_sell_offer_suitable_for_buy_price(price):

@@ -11,7 +11,9 @@ class ItemViewSet(
     viewsets.GenericViewSet
 ):
     serializer_class = ItemSerializer
-    queryset = Item.objects.all()
+
+    def get_queryset(self):
+        return Item.objects.select_related('price').all()
 
 
 class WatchListViewSet(

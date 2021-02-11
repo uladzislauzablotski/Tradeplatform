@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 from trade_app.models import (Item, WatchList, Offer, Inventory, Price, Account, Currency)
 from trade_app.scripts import start_rezervation
 
@@ -10,6 +11,7 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = ('code', 'name', 'price', 'currency')
 
+    @transaction.atomic
     def create(self, validated_data):
         item = Item.objects.create(**validated_data)
         Price.objects.create(item=item)

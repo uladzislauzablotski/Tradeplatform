@@ -35,15 +35,16 @@ class WatchListCreateItemSerializer(serializers.ModelSerializer):
 
         for item in items:
             try:
-                user.watchlist.get(items=item)
-            except Exception:
+                user.watchlist.items.get(id=item.id)
+
                 raise serializers.ValidationError(
                     {"item": "Item is already exists in watchlist",
                      'id': item.id
                      }
                 )
 
-            watchlist.items.add(item)
+            except Item.DoesNotExist:
+                watchlist.items.add(item)
 
         return watchlist
 

@@ -1,4 +1,5 @@
 from rest_framework.exceptions import ValidationError
+from trade_app.models import Inventory
 
 
 def start_rezervation(offer_data):
@@ -32,9 +33,7 @@ def reserve_for_buy_offer(user, item, amount, price, **kwargs):
 
     if balance < total_buy_price:
         raise ValidationError({
-            'detail': 'You have no enough money to buy {} stocks of {}'.format(
-                amount, item.code
-            )
+            'detail': f'You have no enough money to buy {amount} stocks of {item.code}'
         })
 
     account.balance -= total_buy_price
@@ -49,12 +48,11 @@ def reserve_for_sell_offer(user, item, amount, **kwargs):
         inventory = user.inventory.get(item=item)
 
         if inventory.amount < amount:
-            raise Exception
+            raise ValidationError
 
-    except Exception:
+    except Inventory.DoesNotExist or ValidationError:
         raise ValidationError({
-            'detail': 'You have no {} stocks of {} to sell.'.format(
-                amount, item.code)
+            'detail': f'You have no {amount} stocks of {item.code} to sell.'
         })
 
     inventory.amount -= amount

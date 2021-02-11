@@ -13,7 +13,6 @@ class ItemSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         item = Item.objects.create(**validated_data)
         Price.objects.create(item=item)
-        print('hello')
 
         return item
 

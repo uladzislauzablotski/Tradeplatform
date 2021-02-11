@@ -7,14 +7,12 @@ from trade_app.scripts import get_account
 @app.task
 def make_trades(*args, **kwargs):
     buy_offers = Offer.objects.filter(action=True).order_by('created_at')
-    print(buy_offers)
 
     for buy_offer in buy_offers:
 
         while True:
 
             next = find_suitable_sell_offer_and_make_trade(buy_offer)
-            print(next)
 
             if not next:
                 "There is no suitable offer" \
@@ -37,15 +35,12 @@ def make_trade(buy_offer, sell_offer):
     amount_to_sell = sell_offer.amount
 
     if amount_to_buy > amount_to_sell:
-        print('1')
         return trade_amount_to_buy_more(buy_offer, sell_offer, amount_to_sell)
 
     elif amount_to_buy < amount_to_sell:
-        print('2')
         return trade_amount_to_buy_less(buy_offer, sell_offer, amount_to_buy)
 
     elif amount_to_buy == amount_to_sell:
-        print('3')
         return trade_amount_to_buy_equal(buy_offer, sell_offer, amount_to_buy)
 
 
@@ -104,7 +99,6 @@ def trade_amount_to_buy_equal(buy_offer, sell_offer, amount):
 
 
 def change_buyer_inventory(buy_offer, amount):
-    print('4')
     user = buy_offer.user
     item = buy_offer.item
 
@@ -121,7 +115,6 @@ def change_buyer_inventory(buy_offer, amount):
 
 
 def change_seller_inventory(sell_offer, amount):
-    print('5')
     user = sell_offer.user
     item = sell_offer.item
 

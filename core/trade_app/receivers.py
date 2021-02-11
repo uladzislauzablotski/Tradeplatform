@@ -1,9 +1,11 @@
-from django.db.models.signals import post_save
 import os
+from django.db import transaction
 from accounts.signals import user_created
 from django.dispatch import receiver
 from trade_app.models import (Currency, WatchList, Account)
 
+
+@transaction.atomic
 @receiver(user_created)
 def user_created(sender, instance, **kwargs):
 

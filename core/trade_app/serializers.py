@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.db import transaction
 from trade_app.models import (Item, WatchList, Offer, Inventory, Price, Account, Currency)
-from trade_app.scripts import start_rezervation
+from trade_app.scripts import Reservation
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -31,24 +31,26 @@ class WatchListCreateItemSerializer(serializers.ModelSerializer):
         fields = ('items',)
 
     def update(self, watchlist, validated_data):
+        user = validated_data.get('user')
+        items = validated_data.get('items')
 
-        user = dict(**validated_data).get('owner')
-        items = dict(**validated_data).get('items')
+        request_items = tuple(map(lambda x: x.id, items))
 
-        for item in items:
-            try:
-                user.watchlist.items.get(id=item.id)
+        # we have only one item in queryset
+        db_items = tuple(user.watchlist.items.values_list('id', flat=True))
 
-                raise serializers.ValidationError(
-                    {"item": "Item is already exists in watchlist",
-                     'id': item.id
-                     }
-                )
+        already_in_watchlist = [i for i in request_items if i in db_items]
 
-            except Item.DoesNotExist:
-                watchlist.items.add(item)
+        if already_in_watchlist:
+            raise serializers.ValidationError(dict(
+                items=already_in_watchlist,
+                detail="Items are already in watchlist"
+            ))
 
-        return watchlist
+        # one request to add multiple items
+        user.watchlist.items.add(*items)
+
+        return validated_data
 
 
 class OfferSerializer(serializers.ModelSerializer):
@@ -56,10 +58,10 @@ class OfferSerializer(serializers.ModelSerializer):
         model = Offer
         fields = ('amount', 'price', 'item', 'action', 'created_at')
 
+    @transaction.atomic
     def create(self, validated_data):
-        data = dict(**validated_data)
 
-        start_rezervation(data)
+        Reservation.start_reservation(validated_data)
 
         return Offer.objects.create(**validated_data)
 

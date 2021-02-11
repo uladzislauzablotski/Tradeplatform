@@ -23,38 +23,36 @@ class WatchListViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return WatchListCreateItemSerializer
+    serializers = {
+        'create': WatchListCreateItemSerializer,
+        'list': WatchListSerializer
+    }
 
-        return WatchListSerializer
+    def get_serializer_class(self):
+        return self.serializers.get(self.action, 'list')
 
     def create(self, request):
         user = self.request.user
-        watchlist = user.watchlist
 
-        items = WatchListCreateItemSerializer(watchlist, data=request.data)
+        items = self.get_serializer(user.watchlist, data=request.data)
         items.is_valid(raise_exception=True)
 
-        items.save(owner=self.request.user)
+        items.save(user=self.request.user)
 
-        return Response(request.data)
+        return Response(items.data)
 
     def destroy(self, request, pk):
         user = self.request.user
-        watchlist = user.watchlist
 
-        watchlist.items.remove(pk)
+        removed_user = user.watchlist.items.remove(pk)
 
-        return Response(request.data)
+        return Response(removed_user)
 
     def get_queryset(self):
         user = self.request.user
 
-        watchlist = user.watchlist
-
         """get items from user's watchlist"""
-        return watchlist.items.all()
+        return user.watchlist.items.all()
 
 
 class OfferView(
@@ -97,11 +95,13 @@ class AccountView(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return AccountCreateSerializer
+    serializers = {
+        'create': AccountCreateSerializer,
+        'list': AccountSerializer
+    }
 
-        return AccountSerializer
+    def get_serializer_class(self):
+        return self.serializers.get(self.action, 'list')
 
     def get_queryset(self):
         return self.request.user.accounts.all()

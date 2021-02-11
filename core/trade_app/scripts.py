@@ -40,7 +40,7 @@ def reserve_for_buy_offer(user, item, amount, price, **kwargs):
     account.balance -= total_buy_price
     account.reserved_balance += total_buy_price
 
-    account.save()
+    account.save(update_fields=['balance', 'reserved_balance'])
 
 
 def reserve_for_sell_offer(user, item, amount, **kwargs):
@@ -60,4 +60,4 @@ def reserve_for_sell_offer(user, item, amount, **kwargs):
     inventory.amount -= amount
     inventory.reserved_amount += amount
 
-    inventory.save()
+    inventory.save(update_fields=['amount', 'reserved_amount'])

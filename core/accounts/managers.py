@@ -3,6 +3,7 @@ from django.contrib.auth.models import BaseUserManager
 from accounts.scripts import generate_token, get_domain
 from accounts.tasks import send_mail_task
 from rest_framework.reverse import reverse
+from accounts.signals import user_created
 
 class UserManager(BaseUserManager):
 
@@ -32,6 +33,11 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
+        user_created.send(
+            sender=user.__class__,
+            instance=user
+        )
+
         self._send_confirm_link_on_mail(user)
 
         return user
@@ -45,8 +51,8 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, username, email, password, **extra_fields):
 
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError("is_staff for superuser should bet True!")

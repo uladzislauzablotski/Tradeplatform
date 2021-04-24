@@ -13,8 +13,9 @@ services:
       - ./.env.dev
     depends_on:
       - db
-      - celery
       - redis
+      - celery
+      - celery-beat
 
   db:
     image: postgres
@@ -46,4 +47,19 @@ services:
       - .:/usr/src/volumes/celery
     env_file:
       - ./.env.dev
+    depends_on:
+      - redis
+
+  celery-beat:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    command: celery -A tradeplatform beat -l info
+    volumes:
+      - .:/usr/src/app/volumes/celery-beat
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - redis
 
